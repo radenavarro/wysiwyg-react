@@ -4,6 +4,7 @@ import {emojisW10} from "../fallback/emotes/emojisW10";
 import {useEmoteFolder} from "../customHooks/customHooks";
 import {EMOTE_DIR} from "../constants";
 import eye from "../img/emotes/theeye.jpg";
+import {indexOfIncluding} from "../helpers";
 const Textarea = (
   {
     value = "",
@@ -31,13 +32,25 @@ const Textarea = (
   useEffect(() => {
     setParsedValue(value)
   }, [value])
-  console.log(emotes)
+
   const replaceByEmotes = useCallback(debounce(async(txt) => {
     // if (emotes.images && emotes.images?.length > 0) {
-      console.log(emotes.images)
-      emotes.images?.forEach((emote) => {
-        txt = txt.replaceAll(Object.keys(emote)?.[0] ?? "", <img src={emote.src}/>)
-      })
+    let blocks = [];
+    let lastIndex = 0;
+    emotes.images?.forEach((emote) => {
+      // txt = txt.replaceAll(Object.keys(emote)?.[0] ?? "", <img src={emote.src}/>)
+      let index = txt.indexOf(emote.fullname);
+      console.log(index)
+      while (index !== -1) {
+
+        let fragmentText = txt.substring(lastIndex, index);
+        console.log(fragmentText)
+        blocks.push(<span>{fragmentText}</span>, <img src={emote.src}/>)
+        lastIndex = index;
+        index = txt.indexOf(emote.fullname, index + 1);
+      }
+    })
+    // console.log(blocks)
     // }
     // Object.entries(emojisW10).forEach((entry) => {
     //   txt = txt.replaceAll(entry[0], entry[1])
