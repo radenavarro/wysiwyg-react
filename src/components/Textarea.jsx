@@ -44,14 +44,20 @@ const Textarea = (
     );
     // console.log(indexes)
     if (indexes && indexes?.length > 0) {
-      indexes?.map((idxObj) => {
+      indexes?.map((idxObj, indexInArray) => {
         let prevText = txt.substring(prevIndex, idxObj.index)
         let srcImage = emotes.images?.find((i) => i.fullname === idxObj.needle);
         htmlText.push(
-          <span>{prevText}</span>,
-          <img key={srcImage.fullname + idxObj.index} src={srcImage.src}/>
+          <span key={prevText}>{prevText}</span>,
+          <img className={'emoteImg'} key={srcImage.fullname + idxObj.index} src={srcImage.src}/>
         )
         prevIndex = idxObj.index + idxObj.needle.length;
+        if (!indexes[indexInArray + 1]) {
+          let postText = txt.substring(prevIndex);
+          if (postText && postText !== "") {
+            htmlText.push(<span key={postText}>{postText}</span>)
+          }
+        }
       })
     } else {
       htmlText.push(<span>{txt}</span>)
@@ -62,6 +68,7 @@ const Textarea = (
     //   txt = txt.replaceAll(entry[0], entry[1])
     // })
     // console.log(txt)
+    console.log(htmlText)
     setHtmlValue(
       <>
         {htmlText.map((h) => (h))}
@@ -88,7 +95,6 @@ const Textarea = (
       suppressContentEditableWarning
       onInput={(e) => handleOnChange(e, e.target.innerText)}
     >
-      {htmlValue}
       {parsedValue}
     </div>
   )
