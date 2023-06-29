@@ -15,6 +15,7 @@ const Textarea = (
   }
 ) => {
   const [parsedValue, setParsedValue] = useState(value);
+  const [htmlValue, setHtmlValue] = useState(<span></span>);
   const textarea = useRef();
   const emotes = useEmoteFolder();
 
@@ -35,27 +36,37 @@ const Textarea = (
 
   const replaceByEmotes = useCallback(debounce(async(txt) => {
     // if (emotes.images && emotes.images?.length > 0) {
-    let blocks = [];
-    let lastIndex = 0;
-    emotes.images?.forEach((emote) => {
-      // txt = txt.replaceAll(Object.keys(emote)?.[0] ?? "", <img src={emote.src}/>)
-      let index = txt.indexOf(emote.fullname);
-      console.log(index)
-      while (index !== -1) {
+    let htmlText = [];
+    let prevIndex = 0;
+    let indexes = indexOfIncluding(
+      emotes.images?.map((i) => i.fullname),
+      txt
+    );
+    // console.log(indexes)
+    if (indexes && indexes?.length > 0) {
+      indexes?.map((idxObj) => {
+        let prevText = txt.substring(prevIndex, idxObj.index)
+        let srcImage = emotes.images?.find((i) => i.fullname === idxObj.needle);
+        htmlText.push(
+          <span>{prevText}</span>,
+          <img key={srcImage.fullname + idxObj.index} src={srcImage.src}/>
+        )
+        prevIndex = idxObj.index + idxObj.needle.length;
+      })
+    } else {
+      htmlText.push(<span>{txt}</span>)
+    }
 
-        let fragmentText = txt.substring(lastIndex, index);
-        console.log(fragmentText)
-        blocks.push(<span>{fragmentText}</span>, <img src={emote.src}/>)
-        lastIndex = index;
-        index = txt.indexOf(emote.fullname, index + 1);
-      }
-    })
-    // console.log(blocks)
     // }
     // Object.entries(emojisW10).forEach((entry) => {
     //   txt = txt.replaceAll(entry[0], entry[1])
     // })
     // console.log(txt)
+    setHtmlValue(
+      <>
+        {htmlText.map((h) => (h))}
+      </>
+    )
     setParsedValue(txt);
   }, 1000),[])
 
@@ -77,6 +88,7 @@ const Textarea = (
       suppressContentEditableWarning
       onInput={(e) => handleOnChange(e, e.target.innerText)}
     >
+      {htmlValue}
       {parsedValue}
     </div>
   )
