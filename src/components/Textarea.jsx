@@ -34,19 +34,19 @@ const Textarea = (
     setParsedValue(value)
   }, [value])
 
-  const replaceByEmotes = useCallback(debounce(async(txt) => {
+  const replaceByEmotes = useCallback(debounce(async(txt, _emotes) => {
     // if (emotes.images && emotes.images?.length > 0) {
     let htmlText = [];
     let prevIndex = 0;
     let indexes = indexOfIncluding(
-      emotes.images?.map((i) => i.fullname),
+      _emotes.images?.map((i) => i.fullname),
       txt
     );
     // console.log(indexes)
     if (indexes && indexes?.length > 0) {
       indexes?.map((idxObj, indexInArray) => {
         let prevText = txt.substring(prevIndex, idxObj.index)
-        let srcImage = emotes.images?.find((i) => i.fullname === idxObj.needle);
+        let srcImage = _emotes.images?.find((i) => i.fullname === idxObj.needle);
         htmlText.push(
           <span key={prevText}>{prevText}</span>,
           <img className={'emoteImg'} key={srcImage.fullname + idxObj.index} src={srcImage.src}/>
@@ -68,7 +68,9 @@ const Textarea = (
     //   txt = txt.replaceAll(entry[0], entry[1])
     // })
     // console.log(txt)
-    console.log(htmlText)
+    console.log(<>
+      {htmlText.map((h) => (h))}
+    </>)
     setHtmlValue(
       <>
         {htmlText.map((h) => (h))}
@@ -84,19 +86,24 @@ const Textarea = (
     window.getSelection().selectAllChildren(textarea.current)
     window.getSelection().collapseToEnd()
 
-    replaceByEmotes(innerText);
+    replaceByEmotes(innerText, emotes);
   }
 
   return (
-    <div
-      ref={textarea}
-      className={'wysiwyg-textarea'}
-      contentEditable
-      suppressContentEditableWarning
-      onInput={(e) => handleOnChange(e, e.target.innerText)}
-    >
-      {parsedValue}
-    </div>
+    <>
+      <div
+        ref={textarea}
+        className={'wysiwyg-textarea'}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={(e) => handleOnChange(e, e.target.innerText)}
+      >
+        {/*{parsedValue}*/}
+        {htmlValue}
+      </div>
+      {/*{htmlValue}*/}
+    </>
+
   )
 }
 
