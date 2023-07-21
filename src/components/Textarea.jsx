@@ -34,15 +34,16 @@ const Textarea = (
     setParsedValue(value)
   }, [value])
 
-  const replaceByEmotes = useCallback(debounce(async(txt, _emotes) => {
-    // if (emotes.images && emotes.images?.length > 0) {
+  const replaceByEmotesOld = useCallback(debounce(async(txt, _emotes) => {
+    // Se le pasa _emotes como parámetro en vez de utilizar directamente la constante emotes, porque en la primera carga puede venir undefined. De esta forma nos aseguramos 100% de que no lo haga
     let htmlText = [];
     let prevIndex = 0;
     let indexes = indexOfIncluding(
       _emotes.images?.map((i) => i.fullname),
       txt
     );
-    // console.log(indexes)
+    console.log(textarea.current?.children?.[0]?.innerHTML);
+    console.log(indexes)
     if (indexes && indexes?.length > 0) {
       indexes?.map((idxObj, indexInArray) => {
         let prevText = txt.substring(prevIndex, idxObj.index)
@@ -79,6 +80,58 @@ const Textarea = (
     setParsedValue(txt);
   }, 1000),[])
 
+  const replaceByEmotes = useCallback(debounce(async(txt, _emotes) => {
+    // Se le pasa _emotes como parámetro en vez de utilizar directamente la constante emotes, porque en la primera carga puede venir undefined. De esta forma nos aseguramos 100% de que no lo haga
+    let elementsInTextarea = textarea.current?.children;
+    if (elementsInTextarea && elementsInTextarea?.length > 0) {
+      let elmnts = Object.values(elementsInTextarea).map((element) => {
+        let tagname = element.tagName;
+        if (tagname !== "SPAN") return element;
+        let prevIndex = 0;
+        let text = element.innerText;
+        let indexes = indexOfIncluding(
+          _emotes.images?.map((i) => i.fullname),
+          text
+        );
+        console.log(indexes)
+
+        const renderHtml = (element) => {
+          let elements = [];
+          if (indexes && indexes?.length > 0) {
+            indexes?.map((idxObj, indexInArray) => {
+              let prevText = txt.substring(prevIndex, idxObj.index)
+
+              let srcImage = _emotes.images?.find((i) => i.fullname === idxObj.needle);
+              elements.push(
+                <span key={prevText}>{prevText}</span>,
+                <img className={'emoteImg'} key={srcImage.fullname + idxObj.index} src={srcImage.src}/>
+              )
+
+              prevIndex = idxObj.index + idxObj.needle.length;
+
+            })
+            console.log(prevIndex)
+            // Añadir sobrante
+            elements.push(
+              <span>{txt.substring(prevIndex)}</span>
+            )
+          } else {
+            elements.push(<span>{txt}</span>)
+          }
+          return (
+            <>
+              {elements?.map((e) => e)}
+            </>
+          )
+        }
+
+        return renderHtml(element);
+      })
+      setHtmlValue(elmnts)
+    }
+    setParsedValue(txt);
+  }, 1000),[])
+
   const handleOnChange = (event, innerText) => {
     onTextChange(event, innerText);
     // El siguiente bloque de 3 lineas posiciona el cursor al final tras cada input, de lo contrario el cursor se posiciona al principio
@@ -101,7 +154,7 @@ const Textarea = (
         {/*{parsedValue}*/}
         {htmlValue}
       </div>
-      {/*{htmlValue}*/}
+      {/*{console.log(textarea.current?.children)}*/}
     </>
 
   )
