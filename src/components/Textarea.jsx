@@ -83,6 +83,7 @@ const Textarea = (
   const replaceByEmotes = useCallback(debounce(async(txt, _emotes) => {
     // Se le pasa _emotes como parámetro en vez de utilizar directamente la constante emotes, porque en la primera carga puede venir undefined. De esta forma nos aseguramos 100% de que no lo haga
     let elementsInTextarea = textarea.current?.children;
+    // console.log(elementsInTextarea)
     if (elementsInTextarea && elementsInTextarea?.length > 0) {
       let elmnts = Object.values(elementsInTextarea).map((element) => {
         let tagname = element.tagName;
@@ -127,6 +128,7 @@ const Textarea = (
 
         return renderHtml(element);
       })
+      // console.log(elmnts)
       setHtmlValue(elmnts)
     }
     setParsedValue(txt);
